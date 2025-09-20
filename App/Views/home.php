@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Noty - Inicio</title>
-    <link rel="icon" type="image/x-icon" href="/../../assets/images/notyIcon.png">
+    <link rel="icon" type="image/x-icon" href="/../../assets/icons/stickyNote.svg">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link rel="stylesheet" href="/../../css/root.css">
     <link rel="stylesheet" href="/../../css/home.css">
