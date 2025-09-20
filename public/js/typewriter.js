@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const words = ["ideas", "proyectos", "tareas", "recetas", "notas", "planes"];
+  const words = ["ideas.", "proyectos.", "tareas.", "recetas.", "notas.", "planes."];
   const el = document.getElementById("typewriter");
 
   if (!el) {
