@@ -2,31 +2,27 @@
 <html>
 
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Page Title</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
-    <script src='main.js'></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noty - Inicio</title>
+    <link rel="icon" type="image/x-icon" href="/../../assets/images/notyIcon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="/../../css/root.css">
+    <link rel="stylesheet" href="/../../css/register.css">
 </head>
 
 <body>
-
     <main class="main">
-
-    <div class="login-form">
-        <h2>Crear cuenta</h2>
-    </div>
-
+        <div class="register-form">
+            <h2>Iniciar sesión</h2>
+            <form method="POST" action="/login">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" id="password" placeholder="Contraseña" required>
+                <button type="submit">Acceder</button>
+            </form>
+            <p>¿Olvidaste tu contraseña? <a href="/recuperar">Recuperar</a></p>
+        </div>
     </main>
-
-    <h2>Iniciar sesión</h2>
-    <form method="POST" action="/login">
-        <input type="text" name="email" placeholder="Correo">
-        <input type="password" name="password" placeholder="Contraseña">
-        <button type="submit">Entrar</button>
-    </form>
-
 </body>
 
 </html>
