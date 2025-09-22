@@ -8,9 +8,12 @@ use App\Controllers\AuthController;
 Router::get('/', [HomeController::class, 'index']);
 Router::get('/login', [AuthController::class, 'showLoginForm']);
 Router::post('/login', [AuthController::class, 'login']);
+Router::get('/logout', [AuthController::class, 'logout']);
 
 Router::get('/register', [AuthController::class, 'showRegisterForm']);
 Router::post('/register', [AuthController::class, 'register']);
+
+Router::get('/tu-espacio', [HomeController::class, 'tuEspacio']);
 
 Router::get('/about', [HomeController::class, 'about']);
 

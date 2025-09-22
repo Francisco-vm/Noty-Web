@@ -22,10 +22,12 @@ class AuthController
 
         $user = User::login($email, $password);
         if ($user) {
-            session_start();
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            header('Location: /tu-espacio.php');
+            header('Location: /tu-espacio');
             exit;
         } else {
             die('Credenciales inválidas');
@@ -67,5 +69,16 @@ class AuthController
         } else {
             die('Error al registrar el usuario');
         }
+    }
+
+    public function logout()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        session_unset();
+        session_destroy();
+        header('Location: /login');
+        exit;
     }
 }
