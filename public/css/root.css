@@ -14,7 +14,7 @@
 
     --color-primary: #1a1a1a;
     /* Negro elegante */
-    --color-accent: #fedb29;
+     --color-accent: #fedb29;
     --color-accent-secondary: #e2bc00;
     /* Amarillo como único acento */
 
@@ -31,9 +31,7 @@
     --color-btn-hover: #e5e5e5;
     --color-btn-secondary: #ffffff;
     --color-btn-secondary-hover: #e5e5e5 --color-hover: #f7f7f7;
-    /* Fondo al pasar el mouse en cuadernos */
     --color-text-muted: #888888;
-    /* Color para flechas o detalles */
 
 
   }

@@ -3,6 +3,7 @@
 use App\Core\Router;
 use App\Controllers\HomeController;
 use App\Controllers\AuthController;
+use App\Controllers\NoteController;
 
 // Rutas GET
 Router::get('/', [HomeController::class, 'index']);
@@ -17,6 +18,10 @@ Router::get('/tu-espacio', [HomeController::class, 'tuEspacio']);
 
 Router::get('/about', [HomeController::class, 'about']);
 
+Router::get('/get-notes', [NoteController::class, 'getNotesByNotebook']);
 
+Router::get('/get-note-content', [NoteController::class, 'getNoteContent']);
+
+Router::post('/save-note-content', [NoteController::class, 'saveNoteContent']);
 // Ejecutar el router
 Router::dispatch();

@@ -8,7 +8,7 @@ body {
 
 .main {
   display: grid;
-  grid-template-columns: 250px 300px 1fr;
+  grid-template-columns: 300px 400px 1fr;
   height: 100vh;
   overflow: hidden;
 }
@@ -60,7 +60,6 @@ body {
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  border-left: 4px solid var(--notebook-color, var(--color-border));
   background-color: var(--color-card-bg);
   border-radius: var(--border-radius);
   transition: background-color 0.2s ease;
@@ -68,6 +67,10 @@ body {
 }
 
 .notebook-item:hover {
+  background-color: var(--color-bg);
+}
+
+.notebook-item-active {
   background-color: var(--color-bg);
 }
 
@@ -79,16 +82,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.notebooks-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.notebooks-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-border);
-  border-radius: 3px;
-}
-
 /* === Panel central (Notas) === */
 .note-panel {
   display: flex;
@@ -124,60 +117,76 @@ body {
   background-color: var(--color-btn-hover);
 }
 
-.search-filters {
-  margin-bottom: var(--spacing-md);
-}
-
 .notes-list {
   flex-grow: 1;
   overflow-y: auto;
 }
 
-.notes-list::-webkit-scrollbar {
-  width: 6px;
+/* === Items de notas === */
+.note-item {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--color-card-bg);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.notes-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-border);
-  border-radius: 3px;
+.note-item:hover {
+  background-color: var(--color-bg);
+}
+
+.note-item h3 {
+  font-size: var(--font-size-base);
+  margin: 0;
+  color: var(--color-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-item-active {
+  background-color: var(--color-bg);
 }
 
 /* === Panel derecho (Contenido de nota) === */
 .content {
   display: flex;
   flex-direction: column;
+  height: 95%;
   background-color: var(--color-card-bg);
   padding: var(--spacing-lg);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-.title-note h1 {
-  margin: 0 0 var(--spacing-md);
-  font-size: 1.6rem;
-  color: var(--color-primary);
+.title-note {
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .note-content {
   flex-grow: 1;
-  margin-bottom: var(--spacing-lg);
+  overflow-y: auto;
+  margin-bottom: var(--spacing-md);
   line-height: 1.6;
   color: var(--color-text-secondary);
 }
 
 .info-note {
   display: flex;
-  gap: var(--spacing-md);
-  font-size: 0.9rem;
-  color: var(--color-muted);
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--spacing-sm);
+  justify-content: space-between;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #666;
 }
 
 /* === Botón de logout === */
 a[href="/logout"] {
   position: absolute;
-  bottom: var(--spacing-md);
-  right: var(--spacing-md);
   font-size: 0.9rem;
   text-decoration: none;
   color: var(--color-primary);
@@ -190,4 +199,25 @@ a[href="/logout"] {
 
 a[href="/logout"]:hover {
   background-color: var(--color-btn-secondary-hover);
+}
+
+/* Scroll vertical personalizado */
+.notes-list::-webkit-scrollbar,
+.notebooks-list::-webkit-scrollbar,
+.note-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notes-list::-webkit-scrollbar-thumb,
+.notebooks-list::-webkit-scrollbar-thumb,
+.note-content::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 4px;
+  border: 2px solid var(--color-card-bg);
+}
+
+.notes-list::-webkit-scrollbar-track,
+.notebooks-list::-webkit-scrollbar-track,
+.note-content::-webkit-scrollbar-track {
+  background-color: var(--color-card-bg);
 }
