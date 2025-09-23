@@ -29,6 +29,20 @@ class User
         $stmt->bindParam(':user_id', $userId);
         $stmt->bindParam(':hash', $hashedPassword);
 
+        if (!$stmt->execute()) {
+            return false;
+        }
+
+        $defaultTitle = 'Mi primer cuaderno';
+        $defaultColor = '#FFD700';
+
+        $stmt = $db->prepare("INSERT INTO notebooks (title, color, notebook_id, user_id, created_at, updated_at) VALUES (:title, :color, NULL, :user_id, :created_at, :updated_at)");
+        $stmt->bindParam(':title', $defaultTitle);
+        $stmt->bindParam(':color', $defaultColor);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->bindParam(':created_at', $date);
+        $stmt->bindParam(':updated_at', $date);
+
         return $stmt->execute();
     }
 
@@ -53,7 +67,7 @@ class User
         if ($user && password_verify($password, $user['hash'])) {
             return ['id' => $user['id'], 'username' => $user['username']];
         }
-        
+
         return false;
     }
 }

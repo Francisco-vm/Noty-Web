@@ -1,26 +1,39 @@
-:root {
-  --color-bg: #f0f0f0;              /* Fondo general */
-  --color-card-bg: #ffffff;         /* Fondo de tarjetas */
-  --color-text: #1a1a1a;            /* Texto principal */
-  --color-text-secondary: #555555;  /* Texto secundario */
-  --color-muted: #777777;           /* Texto más suave */
-  --color-border: #e5e5e5;          /* Bordes sutiles */
-  
-  --color-primary: #1a1a1a;         /* Negro elegante */
-  --color-accent: #fedb29;
-  --color-accent-secondary: #e2bc00;          /* Amarillo como único acento */
+  :root {
+    --color-bg: #f0f0f0;
+    /* Fondo general */
+    --color-card-bg: #ffffff;
+    /* Fondo de tarjetas */
+    --color-text: #1a1a1a;
+    /* Texto principal */
+    --color-text-secondary: #555555;
+    /* Texto secundario */
+    --color-muted: #777777;
+    /* Texto más suave */
+    --color-border: #e5e5e5;
+    /* Bordes sutiles */
 
-  --font-family: "Segoe UI", sans-serif;
-  --font-size-base: 16px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 32px;
+    --color-primary: #1a1a1a;
+    /* Negro elegante */
+    --color-accent: #fedb29;
+    --color-accent-secondary: #e2bc00;
+    /* Amarillo como único acento */
 
-  --border-radius: 6px;
-  --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    --font-family: "Segoe UI", sans-serif;
+    --font-size-base: 16px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 32px;
+
+    --border-radius: 6px;
+    --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 
     --color-btn: #fedb29;
     --color-btn-hover: #e5e5e5;
     --color-btn-secondary: #ffffff;
-    --color-btn-secondary-hover: #e5e5e5
-}
+    --color-btn-secondary-hover: #e5e5e5 --color-hover: #f7f7f7;
+    /* Fondo al pasar el mouse en cuadernos */
+    --color-text-muted: #888888;
+    /* Color para flechas o detalles */
+
+
+  }

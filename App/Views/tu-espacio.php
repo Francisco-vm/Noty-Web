@@ -23,7 +23,16 @@
             </div>
 
             <div class="notebooks-list">
+                <?php foreach ($Notebooks as $notebook) : ?>
+                    <div class="notebook-item"
+                        data-id="<?= htmlspecialchars($notebook['id']) ?>"
+                        style="--notebook-color: <?= htmlspecialchars($notebook['color']) ?>;">
+                        <span class="notebook-name"><?= htmlspecialchars($notebook['title']) ?></span>
+                    </div>
+                <?php endforeach; ?>
             </div>
+
+
 
             <div class="actions">
             </div>
@@ -32,6 +41,9 @@
         <div class="note-panel">
             <div class="head-notes">
                 <h2>Notas</h2>
+                <button class="add-note">
+                    +
+                </button>
             </div>
 
             <div class="search-filters">

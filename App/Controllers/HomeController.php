@@ -28,10 +28,9 @@ class HomeController
         Auth::requireLogin();
 
         $userId = $_SESSION['user_id'];
-        $mainNotebooks = Notebook::getMainNotebooks($userId);
-        $standaloneNotes = Note::getByUserId($userId);
+
+        $Notebooks = Notebook::getByUserId($userId);
 
         require_once __DIR__ . '/../Views/tu-espacio.php';
     }
-
 }
