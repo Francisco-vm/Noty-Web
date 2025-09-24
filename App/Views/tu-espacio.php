@@ -17,7 +17,7 @@
         <div class="notebooks-panel">
             <div class="head-notebooks">
                 <h2>Cuadernos</h2>
-                <button class="add-notebook">
+                <button class="add-notebook" id="add-notebook-button">
                     +
                 </button>
             </div>
@@ -77,6 +77,21 @@
 
     </main>
 
+    <div id="notebook-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Nuevo Cuaderno</h2>
+            <form id="notebook-form">
+                <label for="name">Nombre:</label>
+                <input type="text" id="name" name="name" required />
+
+                <label for="color">Color (hex):</label>
+                <input type="text" id="color" name="color" value="#F2F2F2" required />
+
+                <button type="submit">Crear cuaderno</button>
+            </form>
+        </div>
+    </div>
 
 
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -91,10 +106,10 @@
     <script src="https://cdn.jsdelivr.net/npm/editorjs-color-picker@1.0.8/dist/index.umd.js"></script>
 
 
-    
+
 
     <script>
-        
+
         const holderId = 'note-content-display';
         let editor;
         let autosaveTimer;
@@ -264,6 +279,125 @@
                 });
         });
     </script>
+
+    <script>
+
+        function createNotebookElement(notebook) {
+            const div = document.createElement('div');
+            div.className = 'notebook-item';
+            div.dataset.id = notebook.id;
+
+            const icon = document.createElement('span');
+            icon.className = 'material-icons-round';
+            icon.style.color = notebook.color;
+            icon.textContent = 'book';
+
+            const title = document.createElement('span');
+            title.className = 'notebook-name';
+            title.textContent = notebook.title;
+
+            div.appendChild(icon);
+            div.appendChild(title);
+
+            div.addEventListener('click', () => {
+                document.querySelectorAll('.notebook-item').forEach(el => {
+                    el.classList.remove('notebook-item-active');
+                });
+
+                div.classList.add('notebook-item-active');
+
+                fetch(`/get-notes?notebook_id=${notebook.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const container = document.getElementById('notes-container');
+                        container.replaceChildren();
+
+                        if (data.length === 0) {
+                            const emptyMsg = document.createElement('p');
+                            emptyMsg.textContent = 'No hay notas en este cuaderno.';
+                            container.appendChild(emptyMsg);
+                            return;
+                        }
+
+                        const fragment = document.createDocumentFragment();
+
+                        data.forEach(note => {
+                            const noteDiv = document.createElement('div');
+                            noteDiv.classList.add('note-item');
+                            noteDiv.dataset.id = note.id;
+
+                            const title = document.createElement('h3');
+                            title.textContent = note.title;
+
+                            noteDiv.appendChild(title);
+                            fragment.appendChild(noteDiv);
+                        });
+
+                        container.appendChild(fragment);
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar notas:', error);
+                    });
+            });
+
+            return div;
+        }
+
+    </script>
+
+    <script>
+        document.getElementById('add-notebook-button').addEventListener('click', () => {
+            document.getElementById('notebook-modal').classList.remove('hidden');
+        });
+
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('notebook-modal').classList.add('hidden');
+        });
+
+        document.getElementById('notebook-form').addEventListener('submit', e => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const color = document.getElementById('color').value.trim();
+
+            if (!/^[a-zA-Z0-9_ ]+$/.test(name)) {
+                alert('Nombre inválido');
+                return;
+            }
+
+            if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(color)) {
+                alert('Color inválido');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('color', color);
+
+            fetch('/create-notebook', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.notebook) {
+                        document.getElementById('notebook-modal').classList.add('hidden');
+
+                        const container = document.querySelector('.notebooks-list');
+                        const newNotebook = createNotebookElement(data.notebook);
+                        container.appendChild(newNotebook);
+                    } else {
+                        alert('Error al crear cuaderno: ' + (data.error || 'Respuesta inválida'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error de red:', err);
+                    alert('No se pudo conectar con el servidor.');
+                });
+        });
+    </script>
+
+
 
 </body>
 
