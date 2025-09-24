@@ -45,7 +45,7 @@ class AuthController
         $password = $_POST['password'] ?? '';
         $username = strip_tags($_POST['username']);
 
-        if (!preg_match('/^[a-zA-Z0-9_ ]+$/', $username)) {
+        if (!preg_match('/^[\p{L}\p{N}_ \-]+$/u', $username)) {
             die('Nombre inválido');
         }
 
