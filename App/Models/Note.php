@@ -53,4 +53,21 @@ class Note
         return $stmt->execute();
     }
 
+    public static function create($userId, $notebookId, $title)
+    {
+        $db = (new Database())->Connect();
+
+        $defaultContent = '{"blocks":[],"version":"2.31.0"}';
+
+        $stmt = $db->prepare("INSERT INTO notes (user_id, notebook_id, title, content, created_at, updated_at) VALUES (:user_id, :notebook_id, :title, :content, NOW(), NOW())");
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->bindParam(':notebook_id', $notebookId);
+        $stmt->bindParam(':title', $title);
+        $stmt->bindParam(':content', $defaultContent);
+
+        if ($stmt->execute()) {
+            return $db->lastInsertId();
+        }
+        return false;
+    }
 }

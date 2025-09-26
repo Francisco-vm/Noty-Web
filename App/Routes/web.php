@@ -26,5 +26,7 @@ Router::get('/get-note-content', [NoteController::class, 'getNoteContent']);
 Router::post('/save-note-content', [NoteController::class, 'saveNoteContent']);
 
 Router::post('/create-notebook', [NotebookController::class, 'createNotebook']);
+
+Router::post('/create-note', [NoteController::class, 'createNote']);
 // Ejecutar el router
 Router::dispatch();

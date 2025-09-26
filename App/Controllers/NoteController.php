@@ -68,4 +68,34 @@ class NoteController
 
         echo json_encode(['success' => $success]);
     }
+
+    public function createNote()
+    {
+        Auth::requireLogin();
+
+        $userId = $_SESSION['user_id'];
+        $notebookId = $_POST['notebook_id'] ?? null;
+        $title = 'Nueva nota';
+
+        if (!$notebookId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Datos incompletos']);
+            return;
+        }
+
+        $noteId = Note::create($userId, $notebookId, $title);
+
+        if ($noteId) {
+            echo json_encode([
+                'success' => true,
+                'note' => [
+                    'id' => $noteId,
+                    'title' => 'Nueva nota'
+                ]
+            ]);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al crear la nota']);
+        }
+    }
 }

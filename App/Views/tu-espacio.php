@@ -40,7 +40,7 @@
         <div class="note-panel">
             <div class="head-notes">
                 <h2>Notas</h2>
-                <button class="add-note">
+                <button class="add-note" id="add-note-button">
                     +
                 </button>
             </div>
@@ -109,50 +109,137 @@
 
 
     <script>
-
+        // ===== VARIABLES GLOBALES =====
         const holderId = 'note-content-display';
-        let editor;
+        let editor = null; // Inicializar explícitamente como null
         let autosaveTimer;
         const AUTOSAVE_DELAY = 1500;
 
-        // Inicializacion del editor de texto //
+        // ===== FUNCIONES UTILITARIAS PARA EL EDITOR =====
 
-        function initEditor(content = null) {
-            const holder = document.getElementById(holderId);
-            holder.replaceChildren();
-
-            if (editor) {
-                editor.destroy();
-            }
-
-            editor = new EditorJS({
-                holder: holderId,
-                autofocus: true,
-                tools: {
-                    header: Header,
-                    table: Table,
-                    inlineCode: InlineCode,
-                    underline: Underline,
-                    list: EditorjsList,
-                    quote: Quote,
-                    checklist: Checklist,
-                    delimiter: Delimiter,
-                    ColorPicker: {
-                        class: window.ColorPicker.ColorPickerWithoutSanitize,
-                    },
-                },
-                data: content ? JSON.parse(content) : { blocks: [] },
-                onChange: () => triggerAutosave()
-            });
+        // Función para verificar si el editor es válido
+        function isValidEditor(editorInstance) {
+            return editorInstance &&
+                typeof editorInstance === 'object' &&
+                typeof editorInstance.destroy === 'function';
         }
 
-        // Funcion de autoguardado cada 1.5 segundos //
+        // Función para destruir el editor de forma segura
+        function safeDestroyEditor() {
+            if (isValidEditor(editor)) {
+                try {
+                    editor.destroy();
+                } catch (error) {
+                    console.warn('Error al destruir editor:', error);
+                }
+            }
+            editor = null;
+        }
+
+        // Función helper para obtener datos válidos del editor
+        function getValidEditorData(content) {
+            if (!content || content.trim() === '') {
+                return { blocks: [] };
+            }
+
+            try {
+                const parsed = JSON.parse(content);
+                return (parsed && Array.isArray(parsed.blocks)) ? parsed : { blocks: [] };
+            } catch (error) {
+                console.warn('Error al parsear contenido JSON:', error);
+                return { blocks: [] };
+            }
+        }
+
+        // ===== FUNCIONES PRINCIPALES =====
+
+        // Inicialización del editor de texto
+        function initEditor(content = null) {
+            const holder = document.getElementById(holderId);
+
+            if (!holder) {
+                console.error('No se encontró el elemento holder para el editor');
+                return;
+            }
+
+            holder.replaceChildren();
+            safeDestroyEditor();
+
+            try {
+                editor = new EditorJS({
+                    holder: holderId,
+                    autofocus: true,
+                    tools: {
+                        header: Header,
+                        table: Table,
+                        inlineCode: InlineCode,
+                        underline: Underline,
+                        list: EditorjsList,
+                        quote: Quote,
+                        checklist: Checklist,
+                        delimiter: Delimiter,
+                        ColorPicker: {
+                            class: window.ColorPicker.ColorPickerWithoutSanitize,
+                        },
+                    },
+                    data: getValidEditorData(content),
+                    onChange: () => triggerAutosave(),
+                    onReady: () => {
+                        console.log('Editor inicializado correctamente');
+                    }
+                });
+            } catch (error) {
+                console.error('Error al inicializar EditorJS:', error);
+                editor = null;
+            }
+        }
+
+        // Función para cerrar/limpiar la nota activa
+        function closeActiveNote() {
+            clearTimeout(autosaveTimer);
+
+            // Remover clase activa de todas las notas
+            document.querySelectorAll('.note-item').forEach(item => {
+                item.classList.remove('note-item-active');
+            });
+
+            // Limpiar el título de la nota
+            const titleContainer = document.querySelector('.title-note');
+            if (titleContainer) {
+                titleContainer.replaceChildren();
+            }
+
+            // Limpiar la información de la nota
+            const noteNotebook = document.getElementById('note-notebook');
+            const noteCreated = document.getElementById('note-created');
+            const noteUpdated = document.getElementById('note-updated');
+
+            if (noteNotebook) noteNotebook.textContent = '';
+            if (noteCreated) noteCreated.textContent = '';
+            if (noteUpdated) noteUpdated.textContent = '';
+
+            // Destruir el editor de forma segura
+            safeDestroyEditor();
+
+            // Limpiar el holder
+            const holder = document.getElementById(holderId);
+            if (holder) {
+                holder.replaceChildren();
+            }
+        }
+
+        // Función de autoguardado
         function triggerAutosave() {
             clearTimeout(autosaveTimer);
             autosaveTimer = setTimeout(() => {
                 const noteId = document.querySelector('.note-item-active')?.dataset.id;
                 if (!noteId) {
                     console.warn('No hay nota activa para guardar');
+                    return;
+                }
+
+                if (!isValidEditor(editor)) {
+                    console.warn('Editor no válido, no se puede guardar');
                     return;
                 }
 
@@ -177,62 +264,124 @@
                             console.error('Error de red al guardar:', error);
                         });
                 }).catch((error) => {
-                    console.error('Error al obtener contenido:', error);
+                    console.error('Error al obtener contenido del editor:', error);
                 });
             }, AUTOSAVE_DELAY);
         }
 
-        // Script para cargar las notas que pertenecen a un cuaderno //
-        document.querySelectorAll('.notebook-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const notebookId = item.dataset.id;
+        // Función para cargar notas de un cuaderno
+        function loadNotesForNotebook(notebookId) {
+            closeActiveNote(); // Cerrar nota activa antes de cargar nuevas notas
 
+            fetch(`/get-notes?notebook_id=${notebookId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('notes-container');
+                    container.replaceChildren();
+
+                    if (data.length === 0) {
+                        const emptyMsg = document.createElement('p');
+                        emptyMsg.classList.add('empty-message');
+                        emptyMsg.textContent = 'No hay notas en este cuaderno.';
+                        container.appendChild(emptyMsg);
+                        return;
+                    }
+
+                    const fragment = document.createDocumentFragment();
+
+                    data.forEach(note => {
+                        const noteDiv = document.createElement('div');
+                        noteDiv.classList.add('note-item');
+                        noteDiv.dataset.id = note.id;
+
+                        const title = document.createElement('h3');
+                        title.textContent = note.title;
+
+                        noteDiv.appendChild(title);
+                        fragment.appendChild(noteDiv);
+                    });
+
+                    container.appendChild(fragment);
+                })
+                .catch(error => {
+                    console.error('Error al cargar notas:', error);
+                });
+        }
+
+        // Función para crear elemento de cuaderno
+        function createNotebookElement(notebook) {
+            const div = document.createElement('div');
+            div.className = 'notebook-item';
+            div.dataset.id = notebook.id;
+
+            const icon = document.createElement('span');
+            icon.className = 'material-icons-round';
+            icon.style.color = notebook.color;
+            icon.textContent = 'book';
+
+            const title = document.createElement('span');
+            title.className = 'notebook-name';
+            title.textContent = notebook.title;
+
+            div.appendChild(icon);
+            div.appendChild(title);
+
+            // Event listener para el cuaderno
+            div.addEventListener('click', () => {
+                // Remover clase activa de todos los cuadernos
                 document.querySelectorAll('.notebook-item').forEach(el => {
                     el.classList.remove('notebook-item-active');
                 });
 
-                item.classList.add('notebook-item-active');
+                // Activar el cuaderno actual
+                div.classList.add('notebook-item-active');
 
-                fetch(`/get-notes?notebook_id=${notebookId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const container = document.getElementById('notes-container');
-                        container.replaceChildren();
+                // Cargar las notas del cuaderno
+                loadNotesForNotebook(notebook.id);
+            });
 
-                        if (data.length === 0) {
-                            const emptyMsg = document.createElement('p');
-                            emptyMsg.textContent = 'No hay notas en este cuaderno.';
-                            container.appendChild(emptyMsg);
-                            return;
-                        }
+            return div;
+        }
 
-                        const fragment = document.createDocumentFragment();
+        // Función para formatear fechas
+        function formatDateShort(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}/${month}/${year}`;
+        }
 
-                        data.forEach(note => {
-                            const noteDiv = document.createElement('div');
-                            noteDiv.classList.add('note-item');
-                            noteDiv.dataset.id = note.id;
+        // ===== EVENT LISTENERS =====
 
-                            const title = document.createElement('h3');
-                            title.textContent = note.title;
+        // Event listener para cuadernos existentes al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.notebook-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const notebookId = item.dataset.id;
 
-                            noteDiv.appendChild(title);
-                            fragment.appendChild(noteDiv);
-                        });
-
-                        container.appendChild(fragment);
-                    })
-                    .catch(error => {
-                        console.error('Error al cargar notas:', error);
+                    // Remover clase activa de todos los cuadernos
+                    document.querySelectorAll('.notebook-item').forEach(el => {
+                        el.classList.remove('notebook-item-active');
                     });
+
+                    // Activar cuaderno actual
+                    item.classList.add('notebook-item-active');
+
+                    // Cargar notas
+                    loadNotesForNotebook(notebookId);
+                });
             });
         });
 
-
-        // Script para cargar el contenido de una nota //
-        document.getElementById('notes-container').addEventListener('click', (event) => {
+        // Event listener para cargar contenido de una nota
+        document.addEventListener('click', (event) => {
             const noteItem = event.target.closest('.note-item');
             if (!noteItem) return;
+
+            // Solo procesar si el click fue dentro del contenedor de notas
+            const notesContainer = document.getElementById('notes-container');
+            if (!notesContainer.contains(noteItem)) return;
 
             document.querySelectorAll('.note-item').forEach(item => {
                 item.classList.remove('note-item-active');
@@ -259,93 +408,24 @@
                     titleElement.textContent = data.title;
                     titleContainer.appendChild(titleElement);
 
-                    initEditor(data.content);
-
-                    function formatDateShort(dateString) {
-                        const date = new Date(dateString);
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const year = String(date.getFullYear()).slice(-2);
-                        return `${day}/${month}/${year}`;
+                    // Inicializar editor con manejo de errores
+                    try {
+                        initEditor(data.content);
+                    } catch (error) {
+                        console.error('Error al inicializar editor:', error);
+                        initEditor(); // Fallback a editor vacío
                     }
 
                     document.getElementById('note-notebook').textContent = `Cuaderno: ${data.notebook_title || 'Sin cuaderno'}`;
                     document.getElementById('note-created').textContent = `Creado: ${formatDateShort(data.created_at)}`;
                     document.getElementById('note-updated').textContent = `Última actualización: ${formatDateShort(data.updated_at)}`;
-
                 })
                 .catch(error => {
                     console.error('Error al cargar la nota:', error);
                 });
         });
-    </script>
 
-    <script>
-
-        function createNotebookElement(notebook) {
-            const div = document.createElement('div');
-            div.className = 'notebook-item';
-            div.dataset.id = notebook.id;
-
-            const icon = document.createElement('span');
-            icon.className = 'material-icons-round';
-            icon.style.color = notebook.color;
-            icon.textContent = 'book';
-
-            const title = document.createElement('span');
-            title.className = 'notebook-name';
-            title.textContent = notebook.title;
-
-            div.appendChild(icon);
-            div.appendChild(title);
-
-            div.addEventListener('click', () => {
-                document.querySelectorAll('.notebook-item').forEach(el => {
-                    el.classList.remove('notebook-item-active');
-                });
-
-                div.classList.add('notebook-item-active');
-
-                fetch(`/get-notes?notebook_id=${notebook.id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const container = document.getElementById('notes-container');
-                        container.replaceChildren();
-
-                        if (data.length === 0) {
-                            const emptyMsg = document.createElement('p');
-                            emptyMsg.textContent = 'No hay notas en este cuaderno.';
-                            container.appendChild(emptyMsg);
-                            return;
-                        }
-
-                        const fragment = document.createDocumentFragment();
-
-                        data.forEach(note => {
-                            const noteDiv = document.createElement('div');
-                            noteDiv.classList.add('note-item');
-                            noteDiv.dataset.id = note.id;
-
-                            const title = document.createElement('h3');
-                            title.textContent = note.title;
-
-                            noteDiv.appendChild(title);
-                            fragment.appendChild(noteDiv);
-                        });
-
-                        container.appendChild(fragment);
-                    })
-                    .catch(error => {
-                        console.error('Error al cargar notas:', error);
-                    });
-            });
-
-            return div;
-        }
-
-    </script>
-
-    <script>
+        // Event listener para crear cuaderno
         document.getElementById('add-notebook-button').addEventListener('click', () => {
             document.getElementById('notebook-modal').classList.remove('hidden');
         });
@@ -386,8 +466,61 @@
                         const container = document.querySelector('.notebooks-list');
                         const newNotebook = createNotebookElement(data.notebook);
                         container.appendChild(newNotebook);
+
+                        // Limpiar formulario
+                        document.getElementById('notebook-form').reset();
                     } else {
                         alert('Error al crear cuaderno: ' + (data.error || 'Respuesta inválida'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error de red:', err);
+                    alert('No se pudo conectar con el servidor.');
+                });
+        });
+
+        // Event listener para crear nota
+        document.getElementById('add-note-button').addEventListener('click', () => {
+            const activeNotebook = document.querySelector('.notebook-item-active');
+            if (!activeNotebook) {
+                alert('Selecciona un cuaderno primero.');
+                return;
+            }
+
+            const notebookId = activeNotebook.dataset.id;
+            const title = 'Nueva Nota';
+
+            const formData = new FormData();
+            formData.append('title', title.trim());
+            formData.append('notebook_id', notebookId);
+
+            fetch('/create-note', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.note) {
+                        const container = document.getElementById('notes-container');
+
+                        // Eliminar mensaje vacío si existe
+                        const emptyMessage = container.querySelector('.empty-message');
+                        if (emptyMessage) {
+                            emptyMessage.remove();
+                        }
+
+                        // Crear la nueva nota
+                        const noteDiv = document.createElement('div');
+                        noteDiv.classList.add('note-item');
+                        noteDiv.dataset.id = data.note.id;
+
+                        const titleElem = document.createElement('h3');
+                        titleElem.textContent = data.note.title;
+                        noteDiv.appendChild(titleElem);
+
+                        container.appendChild(noteDiv);
+                    } else {
+                        alert('Error al crear nota: ' + (data.error || 'Respuesta inválida'));
                     }
                 })
                 .catch(err => {
