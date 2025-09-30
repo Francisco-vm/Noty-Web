@@ -79,17 +79,36 @@
 
     <div id="notebook-modal" class="modal hidden">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Nuevo Cuaderno</h2>
-            <form id="notebook-form">
-                <label for="name">Nombre:</label>
-                <input type="text" id="name" name="name" required />
+            <div class="modal-header">
+                <div class="close-modal">
+                    <span class="material-icons-round">close</span>
+                </div>
 
-                <label for="color">Color (hex):</label>
-                <input type="text" id="color" name="color" value="#F2F2F2" required />
+                <h2>Nuevo cuaderno</h2>
+            </div>
 
-                <button type="submit">Crear cuaderno</button>
-            </form>
+            <div class="body-modal">
+                <form id="notebook-form">
+                    <label for="name">Nombre:</label>
+                    <input type="text" id="name" name="name" required />
+
+                    <div class="color-picker">
+                        <div class="color-red"></div>
+                        <div class="color-blue"></div>
+                        <div class="color-green"></div>
+                        <div class="color-yellow"></div>
+                        <div class="color-purple"></div>
+                        <div class="color-pink"></div>
+                        <div class="color-orange"></div>
+                        <div class="color-brown"></div>
+                        <div class="color-gray"></div>
+                        <div class="color-custom"> <span class="material-icons-round">palette</span>
+                        </div>
+                    </div>
+                    <button type="submit">Crear cuaderno</button>
+                    <input type="hidden" name="color" id="selected-color" />
+                </form>
+            </div>
         </div>
     </div>
 
@@ -104,8 +123,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/editorjs-color-picker@1.0.8/dist/index.umd.js"></script>
-
-
 
 
     <script>
@@ -139,15 +156,21 @@
         // Función helper para obtener datos válidos del editor
         function getValidEditorData(content) {
             if (!content || content.trim() === '') {
-                return { blocks: [] };
+                return {
+                    blocks: []
+                };
             }
 
             try {
                 const parsed = JSON.parse(content);
-                return (parsed && Array.isArray(parsed.blocks)) ? parsed : { blocks: [] };
+                return (parsed && Array.isArray(parsed.blocks)) ? parsed : {
+                    blocks: []
+                };
             } catch (error) {
                 console.warn('Error al parsear contenido JSON:', error);
-                return { blocks: [] };
+                return {
+                    blocks: []
+                };
             }
         }
 
@@ -245,13 +268,15 @@
 
                 editor.save().then((outputData) => {
                     fetch('/save-note-content', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            note_id: noteId,
-                            content: JSON.stringify(outputData)
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                note_id: noteId,
+                                content: JSON.stringify(outputData)
+                            })
                         })
-                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -425,12 +450,22 @@
                 });
         });
 
-        // Event listener para crear cuaderno
+        document.querySelectorAll('.color-picker div').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.color-picker div').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+
+                // Extraer el color directamente del estilo (RGB. Pasar a hex)
+                const selectedColor = window.getComputedStyle(el).backgroundColor;
+                document.getElementById('selected-color').value = selectedColor;
+            });
+        });
+
         document.getElementById('add-notebook-button').addEventListener('click', () => {
             document.getElementById('notebook-modal').classList.remove('hidden');
         });
 
-        document.querySelector('.close').addEventListener('click', () => {
+        document.querySelector('.close-modal').addEventListener('click', () => {
             document.getElementById('notebook-modal').classList.add('hidden');
         });
 
@@ -438,14 +473,14 @@
             e.preventDefault();
 
             const name = document.getElementById('name').value.trim();
-            const color = document.getElementById('color').value.trim();
+            const color = document.getElementById('selected-color').value.trim();
 
             if (!/^[a-zA-Z0-9_ ]+$/.test(name)) {
                 alert('Nombre inválido');
                 return;
             }
 
-            if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(color)) {
+            if (!/^rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)$/.test(color)) {
                 alert('Color inválido');
                 return;
             }
@@ -455,20 +490,18 @@
             formData.append('color', color);
 
             fetch('/create-notebook', {
-                method: 'POST',
-                body: formData
-            })
+                    method: 'POST',
+                    body: formData
+                })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.notebook) {
                         document.getElementById('notebook-modal').classList.add('hidden');
-
                         const container = document.querySelector('.notebooks-list');
                         const newNotebook = createNotebookElement(data.notebook);
                         container.appendChild(newNotebook);
-
-                        // Limpiar formulario
                         document.getElementById('notebook-form').reset();
+                        document.querySelectorAll('.color-picker div').forEach(c => c.classList.remove('selected'));
                     } else {
                         alert('Error al crear cuaderno: ' + (data.error || 'Respuesta inválida'));
                     }
@@ -478,6 +511,7 @@
                     alert('No se pudo conectar con el servidor.');
                 });
         });
+
 
         // Event listener para crear nota
         document.getElementById('add-note-button').addEventListener('click', () => {
@@ -495,9 +529,9 @@
             formData.append('notebook_id', notebookId);
 
             fetch('/create-note', {
-                method: 'POST',
-                body: formData
-            })
+                    method: 'POST',
+                    body: formData
+                })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.note) {
