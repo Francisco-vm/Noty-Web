@@ -32,6 +32,7 @@ body {
 .head-notebooks h2 {
   font-size: 1.2rem;
   margin: 0;
+  color: var(--color-text-secondary);
 }
 
 .add-notebook {
@@ -158,7 +159,7 @@ body {
 .content {
   display: flex;
   flex-direction: column;
-  height: 92%;
+  height: 95%;
   background-color: var(--color-card-bg);
   padding: var(--spacing-md);
   overflow: hidden;
@@ -183,6 +184,10 @@ body {
   flex-shrink: 0;
   font-size: 0.8rem;
   color: #666;
+}
+
+#note-content-display {
+  position: relative;
 }
 
 /* === Modal para crear cuaderno === */
@@ -426,4 +431,54 @@ a[href="/logout"]:hover {
 .notebooks-list::-webkit-scrollbar-track,
 .note-content::-webkit-scrollbar-track {
   background-color: var(--color-card-bg);
+}
+
+@media (max-width: 768px) {
+  .main {
+    grid-template-columns: 60px 80px 1fr;
+    /* cuadernos + notas + contenido */
+  }
+
+  .notebooks-panel {
+    padding: var(--spacing-sm);
+    align-items: center;
+  }
+
+  .head-notebooks h2,
+  .notebook-name {
+    display: none;
+  }
+
+  .notebook-item {
+    justify-content: center;
+    padding: var(--spacing-sm);
+  }
+
+  .note-panel {
+    padding: var(--spacing-sm);
+    align-items: center;
+  }
+
+  .head-notes h2 {
+    display: none;
+  }
+
+  .note-item h3 {
+    display: none;
+  }
+
+  .note-item {
+    justify-content: center;
+    padding: var(--spacing-sm);
+  }
+
+  .content {
+    padding: var(--spacing-sm);
+    height: auto;
+  }
+
+  .note-content {
+    overflow-y: auto;
+    margin-bottom: var(--spacing-sm);
+  }
 }

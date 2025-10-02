@@ -319,9 +319,14 @@
                         noteDiv.classList.add('note-item');
                         noteDiv.dataset.id = note.id;
 
+                        const icon = document.createElement('span');
+                        icon.classList.add('material-icons-round');
+                        icon.textContent = 'sticky_note_2';
+
                         const title = document.createElement('h3');
                         title.textContent = note.title;
 
+                        noteDiv.appendChild(icon);
                         noteDiv.appendChild(title);
                         fragment.appendChild(noteDiv);
                     });
@@ -475,12 +480,13 @@
             const name = document.getElementById('name').value.trim();
             const color = document.getElementById('selected-color').value.trim();
 
-            if (!/^[a-zA-Z0-9_ ]+$/.test(name)) {
+            if (!/^[\p{L}0-9_ ]+$/u.test(name)) {
                 alert('Nombre inválido');
                 return;
             }
 
-            if (!/^rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)$/.test(color)) {
+            const match = color.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+            if (!match || match.slice(1).some(n => n < 0 || n > 255)) {
                 alert('Color inválido');
                 return;
             }

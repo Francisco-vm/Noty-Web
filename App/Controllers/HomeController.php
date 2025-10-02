@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Helpers\Auth;
-use App\Models\Note;
 use App\Models\Notebook;
 
 class HomeController

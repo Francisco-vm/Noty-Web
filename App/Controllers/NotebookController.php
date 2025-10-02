@@ -13,15 +13,16 @@ class NotebookController
 
         $userId = $_SESSION['user_id'];
         $name = strip_tags($_POST['name']);
-        $color = isset($_POST['color']) ? filter_var($_POST['color'], FILTER_SANITIZE_STRING) : '#F2F2F2';
+        $color = $_POST['color'] ?? 'rgb(242, 242, 242)';
+        $color = trim(strip_tags($color));
 
         // Validaciones
-        if (!preg_match('/^[a-zA-Z0-9_ ]+$/', $name)) {
+        if (!preg_match('/^[\p{L}0-9_ ]+$/u', $name)) {
             $this->jsonResponse(false, 'Nombre inválido');
             return;
         }
-
-        if (!preg_match('/^#([0-9a-fA-F]{3}){1,2}$/', $color)) {
+        
+        if (!preg_match('/^rgb\\s*\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*\\)$/i', $color)) {
             $this->jsonResponse(false, 'Color inválido');
             return;
         }
